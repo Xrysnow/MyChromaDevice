@@ -21,7 +21,7 @@ class Device:
 class DeviceConnector:
     def __init__(self, device: Device, handler=None):
         self._handler = handler
-        self._need_close = False
+        self._end = False
         self._device = device
         self._addr = device.getAddress()
         self._ws = websocket.WebSocketApp(self._addr,
@@ -30,11 +30,17 @@ class DeviceConnector:
                                           on_close=self._on_close)
         self._ws.on_open = self._on_open
 
+    def __del__(self):
+        self.close()
+
     def start(self):
         self._ws.run_forever()
 
     def close(self):
-        self._need_close = True
+        if self._end:
+            return
+        self._end = True
+        self._thread.join()
 
     def _on_error(self, ws, error):
         print(error)
@@ -62,11 +68,12 @@ class DeviceConnector:
         def run(*args):
             while True:
                 time.sleep(1)
-                if self._need_close:
+                if self._end:
                     break
             ws.close()
 
-        Thread(target=run).start()
+        self._thread = Thread(target=run)
+        self._thread.start()
 
 def _parse_rgb(v):
     # reversed

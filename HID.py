@@ -2,6 +2,7 @@ import hid
 import time
 import math
 from threading import Thread
+from Common import RGB2HSV, HSV2RGB
 
 READ_BUFF_MAXSIZE = 2048
 
@@ -10,55 +11,6 @@ def _valbyte2(b1, b2):
 
 def _tobyte2(x):
     return [x >> 8, x & 0xff]
-
-def _fromcx(h_, c, x):
-    h = math.floor(h_)
-    if h == 0:
-        return c, x, 0
-    elif h == 1:
-        return x, c, 0
-    elif h == 2:
-        return 0, c, x
-    elif h == 3:
-        return 0, x, c
-    elif h == 4:
-        return x, 0, c
-    elif h == 5:
-        return c, 0, x
-    else:
-        return 0, 0, 0
-
-def RGB2HSV(r, g, b):
-    pi_3 = math.pi / 3
-    r, g, b = r / 255, g / 255, b / 255
-    max_ = max(r, g, b)
-    min_ = min(r, g, b)
-    h = 0
-    div = max_ - min_
-    if min_ == max_:
-        h = 0
-    elif max_ == r:
-        h = pi_3 * (g - b) / div
-    elif max_ == g:
-        h = pi_3 * (2 + (b - r) / div)
-    elif max_ == b:
-        h = pi_3 * (4 + (r - g) / div)
-    if h < 0:
-        h = h + math.pi * 2
-    s = 0
-    if max_ != 0:
-        s = div / max_
-    v = max_
-    return h, s, v
-
-def HSV2RGB(h, s, v):
-    pi_3 = math.pi / 3
-    ch = v * s
-    h_ = h / pi_3
-    x = ch * (1 - abs(h_ % 2 - 1))
-    r1, g1, b1 = _fromcx(h_, ch, x)
-    m = v - ch
-    return int((r1 + m) * 255), int((g1 + m) * 255), int((b1 + m) * 255)
 
 class ReadWorker:
     def __init__(self, device, callback=None):
