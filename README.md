@@ -1,6 +1,6 @@
 # MyChromaDevice
 
-This program recieves Chroma parameters and apply it to a device.
+This program recieves backlight parameters from `ChromaEmulator` and apply it to a device.
 
 ## Note
 
